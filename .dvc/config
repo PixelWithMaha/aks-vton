@@ -1,0 +1,4 @@
+[core]
+    remote = dagshub_remote
+[remote "dagshub_remote"]
+    url = https://dagshub.com/PixelWithMaha/aks-dataset.dvc
