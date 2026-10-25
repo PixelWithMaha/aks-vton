@@ -6,9 +6,9 @@
 Virtual try-on system for South Asian multi-piece garments (kameez, lehenga, saree, gharara, etc.). Users upload a photo and see themselves in LAAM products.
 
 ## Team
-- **Maheen Kamran Zeb** - Lead, Dataset & Cleaning
-- **Maaham Rizwan** - Preprocessing Pipeline
-- **Izma Asif** - Training & Evaluation
+- **Maheen Kamran Zeb** 
+- **Maaham Rizwan** 
+- **Izma Asif** 
 - **Supervisor:** Ms Umm-e-Ammarah
 
 ## Timeline
@@ -19,8 +19,8 @@ Virtual try-on system for South Asian multi-piece garments (kameez, lehenga, sar
 
 ## Quick Start
 ```bash
-git clone https://github.com/YOUR_USERNAME/aks-dataset
-cd aks-dataset
+git clone (https://github.com/PixelWithMaha/Aks-By-LAAM-Our-Virtual-Try-On)
+cd Aks-By-LAAM-Our-Virtual-Try-On
 dvc pull  # Get data from DagsHub
 python scripts/01_filter/smart_filter.py
 ```
@@ -42,12 +42,6 @@ aks-dataset/
 ├── dvc.yaml # Pipeline definition
 ├── params.yaml # Hyperparameters
 └── requirements.txt # Dependencies
-
-
-## Paper Sections
-- **Section 3 (Maheen):** Literature Review + Dataset Cleaning
-- **Section 4 (Maaham):** Preprocessing Pipeline
-- **Section 5 (Izma):** Training & Evaluation
 
 ## Tools Used
 - **FiftyOne:** Dataset curation
