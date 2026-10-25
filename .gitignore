@@ -1,0 +1,42 @@
+# Data (tracked by DVC instead)
+data/
+*.pkl
+*.pth
+*.pt
+
+# Models & checkpoints
+checkpoints/
+*.safetensors
+
+# Notebooks
+.ipynb_checkpoints/
+*.ipynb
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+.env
+*.log
+
+# DVC (keep dvc.yaml and dvc.lock, ignore local cache)
+.dvc/cache
+.dvc/tmp
+
+# Logs
+logs/
+*.log
