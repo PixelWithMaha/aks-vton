@@ -1,5 +1,7 @@
 # Data (tracked by DVC instead)
-data/
+/data/*
+!data/.gitignore
+!data/*.dvc
 *.pkl
 *.pth
 *.pt
