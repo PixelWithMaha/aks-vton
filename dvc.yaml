@@ -1,0 +1,42 @@
+stages:
+  smart_filter:
+    cmd: python scripts/01_filter/smart_filter.py
+    deps:
+      - data/raw
+      - scripts/01_filter/smart_filter.py
+    outs:
+      - data/filtered_flagged:
+          cache: false
+    metrics:
+      - reports/filter_metrics.json:
+          cache: false
+    params:
+      - filter
+
+  preprocess:
+    cmd: python scripts/02_preprocess/run_all.py
+    deps:
+      - data/cleaned/v2.0
+      - scripts/02_preprocess/run_all.py
+    outs:
+      - data/preprocessed
+    metrics:
+      - reports/preprocess_metrics.json:
+          cache: false
+    params:
+      - preprocess
+
+  train:
+    cmd: python scripts/03_train/train_idm_vton.py
+    deps:
+      - data/preprocessed
+      - scripts/03_train/train_idm_vton.py
+    metrics:
+      - reports/train_metrics.json:
+          cache: false
+    plots:
+      - reports/train_loss.csv:
+          x: step
+          y: loss
+    params:
+      - train

@@ -1,0 +1,37 @@
+# Hyperparameters and configuration
+
+# Phase 1: Auto-filtering (FiftyOne)
+filter:
+  blur_threshold: 100          # Laplacian variance threshold
+  brisque_threshold: 50         # Quality score (0-100, lower is better)
+  pose_angle_threshold: 45      # Max angle from frontal (degrees)
+  min_limbs_visible: 0.9        # % of required joints visible
+  min_image_size: 100           # Minimum width/height (pixels)
+
+# Phase 2: Manual review
+manual_review:
+  borderline_blur_range: [80, 120]
+  borderline_angle_range: [25, 45]
+
+# Phase 3: Preprocessing
+preprocess:
+  mediapipe_confidence: 0.5
+  densepose_model: "r50"       # r50 or r101
+  sam_model_type: "vit_l"      # vit_h, vit_l, vit_b
+  sam_checkpoint: "sam_vit_l_0b3195"
+
+# Phase 4: Training
+train:
+  model_id: "stabilityai/stable-diffusion-xl-base-1.0"
+  learning_rate: 1.0e-5
+  batch_size: 8
+  num_epochs: 10
+  lora_rank: 8
+  lora_alpha: 16
+  save_every_n_steps: 500
+  validation_every_n_steps: 1000
+
+# API
+api:
+  inference_timeout: 10        # seconds
+  max_file_size: 10            # MB
