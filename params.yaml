@@ -2,16 +2,27 @@
 
 # Phase 1: Auto-filtering (FiftyOne)
 filter:
-  blur_threshold: 100          # Laplacian variance threshold
-  brisque_threshold: 50         # Quality score (0-100, lower is better)
-  pose_angle_threshold: 45      # Max angle from frontal (degrees)
-  min_limbs_visible: 0.9        # % of required joints visible
-  min_image_size: 100           # Minimum width/height (pixels)
-
-# Phase 2: Manual review
-manual_review:
-  borderline_blur_range: [80, 120]
-  borderline_angle_range: [25, 45]
+  flag_head_crop: false
+  min_image_size: 512        # min(width, height); 100 would let tiny images through
+  resize_to: 512             # blur and BRISQUE are measured at this size
+  blur_threshold: 100        # remove below 80, borderline 80-120 (margin 0.2)
+  brisque_threshold: 50      # remove above 60, borderline 40-60
+  use_brisque: true
+  borderline_margin: 0.2
+  pose_confidence: 0.5
+  min_limbs_visible: 0.75     # below this: borderline
+  min_limbs_remove: 0.6     # below this: remove
+  edge_margin: 0.005
+  brisque_flags: false       # record BRISQUE but don't flag with it
+  seated_remove: 0.5         # thigh verticality below this = seated
+  seated_borderline: 0.7
+  ankle_below_frame: 1.05
+  pose_angle_threshold: 60   # above: remove
+  angle_borderline_start: 35 # 25-45: borderline
+  person_min_height: 0.15    # ignore people smaller than 15% of image height
+  dedup_similarity: 0.95
+  dedup_model: facebook/dinov2-small
+  upper_body_categories: [Men_Waistcoat, Jacket, Peplum, Wrap]
 
 # Phase 3: Preprocessing
 preprocess:

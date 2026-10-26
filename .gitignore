@@ -42,3 +42,5 @@ ENV/
 # Logs
 logs/
 *.log
+models/
+reports/sample_*
