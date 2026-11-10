@@ -1,0 +1,56 @@
+schema: '2.0'
+stages:
+  smart_filter:
+    cmd: python scripts/01_filter/smart_filter.py
+    deps:
+    - path: data/raw
+      hash: md5
+      md5: cc1566406faf6d5e1a748a46fc894ec5.dir
+      size: 6198445108
+      nfiles: 9471
+    - path: scripts/01_filter/smart_filter.py
+      hash: md5
+      md5: d9f0909fbcfbe86dc51d666984c66352
+      size: 19200
+    params:
+      params.yaml:
+        filter:
+          flag_head_crop: false
+          min_image_size: 512
+          resize_to: 512
+          blur_threshold: 100
+          brisque_threshold: 50
+          use_brisque: true
+          borderline_margin: 0.2
+          pose_confidence: 0.5
+          min_limbs_visible: 0.75
+          min_limbs_remove: 0.6
+          edge_margin: 0.005
+          brisque_flags: false
+          seated_remove: 0.5
+          seated_borderline: 0.7
+          ankle_below_frame: 1.0
+          pose_angle_threshold: 60
+          angle_borderline_start: 45
+          person_min_height: 0.15
+          dedup_similarity: 0.95
+          dedup_model: facebook/dinov2-small
+          upper_body_categories:
+          - Men_Waistcoat
+          - Jacket
+          - Peplum
+          - Wrap
+          yolo_model: yolo11m.pt
+          use_ai_check: false
+          ai_model: google/siglip2-base-patch16-384
+          ai_keep_conf: 0.6
+          ai_remove_conf: 0.6
+    outs:
+    - path: reports/filter_flags.csv
+      hash: md5
+      md5: df9b228de2d90e084b65a277b0560298
+      size: 2805943
+    - path: reports/filter_metrics.json
+      hash: md5
+      md5: b6fb8c5e1ec3bd713b6957dc6aa12029
+      size: 2127

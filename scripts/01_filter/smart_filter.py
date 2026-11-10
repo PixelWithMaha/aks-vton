@@ -80,7 +80,9 @@ def brisque_score(img):
     return float(piq.brisque(t, data_range=1.0).item())
 
 def count_people(yolo, img, min_height):
-    """Return (n_similar, n_background, (top, bottom) of main box, phone position)."""
+    """Return (n_similar, n_background, (top, bottom) of main box, phone boxes).
+
+    Phone boxes are (x1, y1, x2, y2) as fractions of the image, only those on the main person."""
     H = img.shape[0]
     res = yolo(img[..., ::-1], classes=[0, 67], conf=0.25, verbose=False)[0]  # 0=person, 67=phone
     xyxy = res.boxes.xyxy.cpu().numpy()
@@ -90,7 +92,7 @@ def count_people(yolo, img, min_height):
               if k == 0 and (b[3] - b[1]) / H >= min_height]
     phones = [b for b, k, c in zip(xyxy, cls, conf) if k == 67 and c >= 0.3]
     if not people:
-        return 0, 0, None, None
+        return 0, 0, None, []
     people.sort(key=lambda p: p[0][3] - p[0][1], reverse=True)
     main = people[0][0]
     main_h = main[3] - main[1]
@@ -105,15 +107,24 @@ def count_people(yolo, img, min_height):
     others = [b for b, c in people[1:] if overlap(main, b) < 0.5 and c >= 0.5]
     n_similar = sum(1 for b in others if (b[3] - b[1]) >= 0.5 * main_h)
 
-    phone = None
-    for p in phones:
-        cx, cy = (p[0] + p[2]) / 2, (p[1] + p[3]) / 2
-        if main[0] <= cx <= main[2] and main[1] <= cy <= main[3]:
-            if (cy - main[1]) / main_h < 0.4:
-                phone = "top"
-                break
-            phone = "body"
-    return 1 + n_similar, len(others) - n_similar, (main[1] / H, main[3] / H), phone
+    W = img.shape[1]
+    on_person = [
+        (p[0] / W, p[1] / H, p[2] / W, p[3] / H) for p in phones
+        if main[0] <= (p[0] + p[2]) / 2 <= main[2] and main[1] <= (p[1] + p[3]) / 2 <= main[3]
+    ]
+    return 1 + n_similar, len(others) - n_similar, (main[1] / H, main[3] / H), on_person
+
+
+def phone_over_face(phones, nose, pad=0.25):
+    """True if a phone box (grown by `pad` of its size) contains the nose: a mirror selfie.
+    Earrings are sometimes detected as phones, but they sit beside the face, not over the nose."""
+    if nose is None:
+        return False
+    for x1, y1, x2, y2 in phones:
+        g = pad * max(x2 - x1, y2 - y1)
+        if x1 - g <= nose[0] <= x2 + g and y1 - g <= nose[1] <= y2 + g:
+            return True
+    return False
 
 def make_pose_model(min_conf):
     """MediaPipe Tasks API (the old mp.solutions API was removed)."""
@@ -138,12 +149,12 @@ def make_pose_model(min_conf):
     return vision.PoseLandmarker.create_from_options(opts)
 
 def pose_checks(pose, img):
-    """Return (joints visible, yaw, ankle_y, leg_vertical) or four Nones."""
+    """Return (joints visible, yaw, ankle_y, leg_vertical, nose (x, y)) or five Nones."""
     import mediapipe as mp
     mp_img = mp.Image(image_format=mp.ImageFormat.SRGB, data=np.ascontiguousarray(img))
     r = pose.detect(mp_img)
     if not r.pose_landmarks:
-        return None, None, None, None
+        return None, None, None, None, None
     lm = r.pose_landmarks[0]
     vis = [
         (lm[i].visibility or 0) >= 0.5 and 0 <= lm[i].x <= 1 and 0 <= lm[i].y <= 1
@@ -166,7 +177,7 @@ def pose_checks(pose, img):
                 if length > 1e-6:
                     ratios.append(abs(ddy) / length)  # 1 = thigh vertical, 0 = horizontal
             leg = sum(ratios) / len(ratios) if ratios else None
-    return frac, yaw, ankle_y, leg
+    return frac, yaw, ankle_y, leg, (lm[0].x, lm[0].y)
 
 
 def sharpness(gray, grid=4, pct=80):
@@ -216,7 +227,7 @@ def process_image(row, P, yolo, pose):
 
     # people and phones
     det = downscale(img, 1024)
-    n_main, n_bg, box, phone = count_people(yolo, det, P["person_min_height"])
+    n_main, n_bg, box, phones = count_people(yolo, det, P["person_min_height"])
     row["n_people"], row["n_background"] = n_main, n_bg
     pose_result = None
     if n_main == 0:
@@ -231,10 +242,6 @@ def process_image(row, P, yolo, pose):
         row["rm"].append("multiple_people")
     elif n_bg > 0:
         row["bd"].append("background_person")
-    if phone == "top":
-        row["rm"].append("phone_covering_face")
-    elif phone == "body":
-        row["bd"].append("phone_in_hand")
 
     if box:
         row["box_top"], row["box_bottom"] = round(box[0], 3), round(box[1], 3)
@@ -242,7 +249,9 @@ def process_image(row, P, yolo, pose):
             row["bd"].append("head_cropped")
 
     # pose: full body, facing the camera, standing
-    frac, yaw, ankle_y, leg = pose_result or pose_checks(pose, det)
+    frac, yaw, ankle_y, leg, nose = pose_result or pose_checks(pose, det)
+    if phone_over_face(phones, nose):
+        row["rm"].append("phone_covering_face")
     row["limbs_visible"] = None if frac is None else round(frac, 2)
     row["yaw_deg"] = None if yaw is None else round(yaw, 1)
     row["ankle_y"] = None if ankle_y is None else round(ankle_y, 2)
@@ -336,10 +345,85 @@ def find_duplicates(rows, P, device):
                 rows[i]["rm"].append("duplicate")
 
 
+# ----------------------------------------------------------------- AI second opinion
+# SigLIP compares each image with these descriptions. It does not decide alone:
+# it only sends images to review when it disagrees with the rules (see decide()).
+AI_PROMPTS = {
+    "good": "a full-length fashion photo of a model standing and facing the camera, outfit visible from head to toe",
+    "upper": "a fashion photo of a model standing, shown from the knees up",
+    "mirror_selfie": "a mirror selfie, a person holding a phone in front of their face",
+    "seated": "a photo of a person sitting down",
+    "cropped": "a close-up portrait photo cropped at the waist, legs not visible",
+    "back_view": "a photo of a person seen from behind, back view",
+    "no_person": "a garment on a mannequin or hanger or laid flat, no person",
+    "multi_person": "a photo of two or more people together",
+    "detail": "a close-up of fabric embroidery detail",
+}
+AI_OK_UPPER = {"good", "upper", "cropped"}  # fine for knee-up categories
+# The rules measure body cropping better (pose); SigLIP confuses a cut-off head with a
+# cut-off body. So crop labels only count when pose found no ankles.
+AI_CROP = {"upper", "cropped", "detail"}
+
+
+def ai_check(rows, P, device):
+    """Add ai_label (best-matching description) and ai_good (its probability of 'good')."""
+    import torch
+    from transformers import AutoModel, AutoProcessor
+
+    proc = AutoProcessor.from_pretrained(P["ai_model"])
+    model = AutoModel.from_pretrained(P["ai_model"]).to(device).eval()
+    feat = lambda o: o if torch.is_tensor(o) else o.pooler_output  # transformers 4 vs 5
+    keys = list(AI_PROMPTS)
+    t = proc(text=list(AI_PROMPTS.values()), padding="max_length", max_length=64,
+             return_tensors="pt").to(device)
+    with torch.no_grad():
+        T = torch.nn.functional.normalize(feat(model.get_text_features(**t)), dim=-1)
+
+    todo = [i for i, r in enumerate(rows) if "unreadable" not in r["rm"]]
+    for s in tqdm(range(0, len(todo), 16), desc="ai check"):
+        idx = todo[s:s + 16]
+        ims = [Image.fromarray(downscale(load_rgb(RAW / rows[i]["path"]), 512)) for i in idx]
+        x = proc(images=ims, return_tensors="pt").to(device)
+        with torch.no_grad():
+            I = torch.nn.functional.normalize(feat(model.get_image_features(**x)), dim=-1)
+        probs = (100 * I @ T.T).softmax(-1).cpu().numpy()
+        for i, pr in zip(idx, probs):
+            rows[i]["ai_label"] = keys[int(pr.argmax())]
+            rows[i]["ai_conf"] = round(float(pr.max()), 3)
+            rows[i]["ai_good"] = round(float(pr[0]), 3)
+
+
+def decide(row, P):
+    """Combine rules and AI. Rule removes stay removed (they were 17/17 right on the sample)."""
+    if row["rm"]:
+        return "remove"
+    label = row.get("ai_label")
+    if label is None:
+        return "borderline" if row["bd"] else "keep"
+    upper_only = row["category"] in P["upper_body_categories"]
+    ai_ok = label in AI_OK_UPPER if upper_only else label == "good"
+    if label in AI_CROP and row.get("ankle_y") is not None:
+        ai_ok = True
+    if not row["bd"]:
+        if ai_ok:
+            return "keep"                       # both agree
+        row["bd"].append(f"ai_{label}")         # rules say keep, AI disagrees
+        return "borderline"
+    # rules unsure: let a confident AI settle it
+    if ai_ok and row["ai_good"] >= P["ai_keep_conf"]:
+        row["bd"].append("ai_resolved_keep")
+        return "keep"
+    if not ai_ok and label not in AI_CROP and row["ai_conf"] >= P["ai_remove_conf"]:
+        row["rm"].append(f"ai_{label}")
+        return "remove"
+    return "borderline"
+
+
 # ----------------------------------------------------------------- main
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--limit", type=int, default=0, help="random images per category (test run)")
+    ap.add_argument("--seed", type=int, default=0, help="which random sample (change for a fresh one)")
     args = ap.parse_args()
 
     P = yaml.safe_load(open("params.yaml"))["filter"]
@@ -352,17 +436,24 @@ def main():
         "mps" if torch.backends.mps.is_available() else "cpu")
     print("device:", device)
 
-    yolo = YOLO("yolov8n.pt")
+    yolo_path = Path("models") / P.get("yolo_model", "yolo11m.pt")
+    if not yolo_path.exists():  # ultralytics downloads known weights by name
+        yolo_path.parent.mkdir(exist_ok=True)
+        YOLO(yolo_path.name)
+        Path(yolo_path.name).rename(yolo_path)
+    yolo = YOLO(str(yolo_path))
     pose = make_pose_model(P["pose_confidence"])
 
-    rows = collect(args.limit)
+    rows = collect(args.limit, args.seed)
     print(f"{len(rows)} images")
     for row in tqdm(rows, desc="checks"):
         process_image(row, P, yolo, pose)
     find_duplicates(rows, P, device)
+    if P.get("use_ai_check"):
+        ai_check(rows, P, device)
 
     for row in rows:
-        row["tag"] = "remove" if row["rm"] else ("borderline" if row["bd"] else "keep")
+        row["tag"] = decide(row, P)
         row["reasons"] = ";".join(row["rm"] + row["bd"])
         del row["rm"], row["bd"]
 

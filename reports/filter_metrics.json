@@ -1,0 +1,120 @@
+{
+  "total": 9456,
+  "keep": 8166,
+  "borderline": 273,
+  "remove": 1017,
+  "reasons": {
+    "cropped_body": 328,
+    "duplicate": 280,
+    "no_person": 133,
+    "slightly_turned": 118,
+    "pose_not_found": 117,
+    "phone_covering_face": 112,
+    "not_frontal": 65,
+    "seated": 46,
+    "background_person": 46,
+    "multiple_people": 45,
+    "too_small": 36,
+    "not_full_body": 31,
+    "maybe_seated": 19,
+    "soft": 10,
+    "blurry": 7
+  },
+  "by_category": {
+    "Anarkali": {
+      "keep": 301,
+      "borderline": 12,
+      "remove": 38
+    },
+    "Angrakha": {
+      "keep": 369,
+      "borderline": 11,
+      "remove": 16
+    },
+    "Co-Ord-Sets": {
+      "keep": 433,
+      "borderline": 9,
+      "remove": 57
+    },
+    "Gharara": {
+      "keep": 437,
+      "borderline": 15,
+      "remove": 48
+    },
+    "Gown": {
+      "keep": 392,
+      "borderline": 7,
+      "remove": 19
+    },
+    "Jacket": {
+      "keep": 100,
+      "borderline": 3,
+      "remove": 9
+    },
+    "Kaftan": {
+      "keep": 455,
+      "borderline": 15,
+      "remove": 28
+    },
+    "Lehenga": {
+      "keep": 452,
+      "borderline": 11,
+      "remove": 25
+    },
+    "Maxi": {
+      "keep": 454,
+      "borderline": 14,
+      "remove": 32
+    },
+    "Men_Kurta_Set": {
+      "keep": 394,
+      "borderline": 19,
+      "remove": 87
+    },
+    "Men_Shalwar_Kameez": {
+      "keep": 412,
+      "borderline": 13,
+      "remove": 95
+    },
+    "Men_Sherwani": {
+      "keep": 279,
+      "borderline": 17,
+      "remove": 90
+    },
+    "Men_Waistcoat": {
+      "keep": 1512,
+      "borderline": 55,
+      "remove": 108
+    },
+    "Peplum": {
+      "keep": 48,
+      "borderline": 0,
+      "remove": 3
+    },
+    "Pishwas": {
+      "keep": 470,
+      "borderline": 8,
+      "remove": 22
+    },
+    "Saree": {
+      "keep": 314,
+      "borderline": 20,
+      "remove": 43
+    },
+    "Sharara": {
+      "keep": 458,
+      "borderline": 16,
+      "remove": 194
+    },
+    "Women_Kurta_Set": {
+      "keep": 875,
+      "borderline": 28,
+      "remove": 93
+    },
+    "Wrap": {
+      "keep": 11,
+      "borderline": 0,
+      "remove": 10
+    }
+  }
+}

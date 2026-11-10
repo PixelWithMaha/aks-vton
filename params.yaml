@@ -16,13 +16,19 @@ filter:
   brisque_flags: false       # record BRISQUE but don't flag with it
   seated_remove: 0.5         # thigh verticality below this = seated
   seated_borderline: 0.7
-  ankle_below_frame: 1.05
+  ankle_below_frame: 1.0     # predicted ankle below the bottom edge = feet cut off
   pose_angle_threshold: 60   # above: remove
-  angle_borderline_start: 35 # 25-45: borderline
+  angle_borderline_start: 45 # 45-60: borderline (35 flagged good three-quarter shots)
   person_min_height: 0.15    # ignore people smaller than 15% of image height
   dedup_similarity: 0.95
   dedup_model: facebook/dinov2-small
   upper_body_categories: [Men_Waistcoat, Jacket, Peplum, Wrap]
+  yolo_model: yolo11m.pt     # in models/; yolov8n missed phones in mirror selfies
+  # AI second opinion (SigLIP zero-shot). Disagreement with the rules -> borderline.
+  use_ai_check: false        # tested base + so400m on 304 images: no gain over rules
+  ai_model: google/siglip2-base-patch16-384
+  ai_keep_conf: 0.6          # rules borderline + AI 'good' >= this -> keep
+  ai_remove_conf: 0.6        # rules borderline + AI bad label >= this -> remove
 
 # Phase 3: Preprocessing
 preprocess:

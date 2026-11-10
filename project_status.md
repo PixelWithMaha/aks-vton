@@ -1,6 +1,6 @@
 # AKS by LAAM: Project Status (Dataset Cleaning Phase)
 
-Last updated: 2026-10-26 | Maintainer: Maheen
+Last updated: 2026-10-26 | Maintainer: Maaham
 Team: Maheen Kamran Zeb, Maaham Rizwan, Izma Asif | Supervisor: Ms Umm-e-Ammarah
 University: FAST-NUCES, in collaboration with LAAM
 
@@ -149,3 +149,30 @@ dvc remote modify --local dagshub_remote password <your OWN DagsHub token>
 dvc pull -r dagshub_remote
 ```
 Add the `dagshub` git remote (`https://dagshub.com/PixelWithMaha/aks-dataset.git`) to push there.
+
+## FiftyOne: viewing and reviewing images
+
+FiftyOne is a local web app that shows our images in a grid with the script's scores and reasons attached.
+
+Open the results:
+```bash
+pip install fiftyone
+python scripts/01_filter/view_flags.py reports/sample_flags.csv     # sample run
+python scripts/01_filter/view_flags.py                              # full run (reports/filter_flags.csv)
+```
+A browser tab opens. Stop it with Ctrl+C in the terminal.
+
+Using the left sidebar:
+- `auto_tag`: click keep / borderline / remove to see one pile.
+- `reasons`: lists each reason with a count (blurry, seated, phone_covering_face, ...). Click one to see all images flagged for it. This is the main tool for judging whether a threshold is wrong.
+- If `reasons` has no checkbox, it sits under the OTHER group. `view_flags.py` declares it as a list field
+  (`ds.add_sample_field("reasons", fo.ListField, subfield=fo.StringField)`) so it appears under PRIMITIVES.
+- Tick the checkbox next to a field (`category`, `limbs_visible`, `ankle_y`, `leg_vertical`, `yaw_deg`) to print its value on every thumbnail. Open a field's arrow to filter by range or sort.
+- Click an image to expand it; arrow keys move to the next one.
+
+Tuning loop: change params.yaml -> re-run the sample -> open the viewer -> click a reason -> look at 20-30 images -> repeat.
+
+Important limits:
+- FiftyOne stores its data in a local database (`~/.fiftyone`) on each person's laptop. Teammates do NOT see each other's tags or changes.
+- `view_flags.py` rebuilds the dataset every time it runs (`overwrite=True`), so any tags made in the UI are lost if it is relaunched. Do not review with this script until the review version exists (see tasks).
+- Manual review plan: split the borderline pile by category (one person per group of categories), tag each image keep or remove, export to CSV with the reviewer's name, then merge the exports into `reports/review_decisions.csv` and commit it to git.
