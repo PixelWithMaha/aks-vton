@@ -91,7 +91,7 @@ These are starting values being tuned, not final. Final values will come from th
 2. Full run through DVC (about 40 min): `dvc exp run smart_filter`. Try 2-4 threshold variations with
    `dvc exp run smart_filter -S filter.blur_threshold=120`, compare with `dvc exp show`.
 3. Pick the best run: `dvc exp apply <name>`, commit, `dvc exp push dagshub <name>`.
-4. Manual review of the borderline pile in FiftyOne, split three ways; export decisions to `reports/review_decisions.csv` (keyed by image path, with reviewer name).
+4. Manual review of the 144 borderline images with `review_tool.py`, split three ways (see `REVIEW_GUIDE.md`); `review_tool.py --merge` writes `reports/review_decisions.csv`.
 5. `build_cleaned.py` builds `data/cleaned/v2.0` (reviewed decision overrides the automatic tag). Then `dvc push -r dagshub_remote`, `git push` to both remotes, tag `v2.0-cleaned`.
 
 ## 7. Decisions made (with reasons)
@@ -174,5 +174,4 @@ Tuning loop: change params.yaml -> re-run the sample -> open the viewer -> click
 
 Important limits:
 - FiftyOne stores its data in a local database (`~/.fiftyone`) on each person's laptop. Teammates do NOT see each other's tags or changes.
-- `view_flags.py` rebuilds the dataset every time it runs (`overwrite=True`), so any tags made in the UI are lost if it is relaunched. Do not review with this script until the review version exists (see tasks).
-- Manual review plan: split the borderline pile by category (one person per group of categories), tag each image keep or remove, export to CSV with the reviewer's name, then merge the exports into `reports/review_decisions.csv` and commit it to git.
+- `view_flags.py` rebuilds the dataset every time it runs (`overwrite=True`), so any tags made in the UI are lost if it is relaunched. For the review, use `review_tool.py`: it opens FiftyOne on a dataset that is never rebuilt and saves tags to `reports/review_<name>.csv` (see `REVIEW_GUIDE.md`).
