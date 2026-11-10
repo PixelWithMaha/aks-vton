@@ -29,6 +29,9 @@ filter:
   ai_model: google/siglip2-base-patch16-384
   ai_keep_conf: 0.6          # rules borderline + AI 'good' >= this -> keep
   ai_remove_conf: 0.6        # rules borderline + AI bad label >= this -> remove
+  # borderline images settled without review (checked by eye on run rules-v1)
+  auto_keep_reasons: [slightly_turned, soft]   # ~95% fine
+  auto_remove_reasons: [maybe_seated]          # ~85% seated
 
 # Phase 3: Preprocessing
 preprocess:

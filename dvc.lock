@@ -10,8 +10,8 @@ stages:
       nfiles: 9471
     - path: scripts/01_filter/smart_filter.py
       hash: md5
-      md5: d9f0909fbcfbe86dc51d666984c66352
-      size: 19200
+      md5: 2fba1dd4dca8d33af9c40c6d3f1b6fbc
+      size: 19794
     params:
       params.yaml:
         filter:
@@ -45,12 +45,17 @@ stages:
           ai_model: google/siglip2-base-patch16-384
           ai_keep_conf: 0.6
           ai_remove_conf: 0.6
+          auto_keep_reasons:
+          - slightly_turned
+          - soft
+          auto_remove_reasons:
+          - maybe_seated
     outs:
     - path: reports/filter_flags.csv
       hash: md5
-      md5: df9b228de2d90e084b65a277b0560298
-      size: 2805943
+      md5: baadd092d8247a52bfb1bdc04835f478
+      size: 2805205
     - path: reports/filter_metrics.json
       hash: md5
-      md5: b6fb8c5e1ec3bd713b6957dc6aa12029
-      size: 2127
+      md5: 1c9da65723fea725a46d046793c2c94b
+      size: 2119

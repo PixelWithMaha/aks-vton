@@ -419,6 +419,22 @@ def decide(row, P):
     return "borderline"
 
 
+def auto_resolve(tag, row, P):
+    """Settle borderline images whose reasons proved one-sided in manual checks.
+
+    From looking at all 273 borderline images of run rules-v1: 'slightly_turned' and
+    'soft' were ~95% fine, 'maybe_seated' ~85% bad. Reasons stay in the CSV, so
+    these images can still be found and reviewed later."""
+    if tag != "borderline":
+        return tag
+    bd = set(row["bd"])
+    if bd & set(P.get("auto_remove_reasons", [])):
+        return "remove"
+    if bd <= set(P.get("auto_keep_reasons", [])):
+        return "keep"
+    return tag
+
+
 # ----------------------------------------------------------------- main
 def main():
     ap = argparse.ArgumentParser()
@@ -453,7 +469,7 @@ def main():
         ai_check(rows, P, device)
 
     for row in rows:
-        row["tag"] = decide(row, P)
+        row["tag"] = auto_resolve(decide(row, P), row, P)
         row["reasons"] = ";".join(row["rm"] + row["bd"])
         del row["rm"], row["bd"]
 
