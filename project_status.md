@@ -55,7 +55,7 @@ Checks per image:
 - Duplicates: DINOv2 embeddings, cosine similarity >= 0.95, keep the sharpest of each group
 - Upper-body categories (Men_Waistcoat, Jacket, Peplum, Wrap) are allowed to be knee-up crops
 - Missing face is NOT penalised (the garment is the subject); `flag_head_crop: false`
-
+python scripts/01_filter/review_tool.py maaham
 Outputs: `reports/filter_flags.csv` (one row per image), `reports/filter_metrics.json` (counts, tracked by DVC).
 Sample runs (`--limit 10`) write `reports/sample_*` instead and are not recorded by DVC.
 
