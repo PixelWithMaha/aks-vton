@@ -259,7 +259,9 @@ def process_image(row, P, yolo, pose):
     if frac is None:
         row["bd"].append("pose_not_found")
         return
-    if ankle_y > P["ankle_below_frame"] and not upper_only:
+    # kurta-type outfits: the kurta ends at the knee, so a shin crop still shows the whole garment
+    ankle_limit = P["ankle_below_frame_kurta"] if row["category"] in P["kurta_categories"] else P["ankle_below_frame"]
+    if ankle_y > ankle_limit and not upper_only:
         row["rm"].append("cropped_body")
     if frac < P["min_limbs_remove"]:
         row["rm"].append("not_full_body")
@@ -283,7 +285,7 @@ def embed_all(rows, model_name, device):
 
     proc = AutoImageProcessor.from_pretrained(model_name)
     model = AutoModel.from_pretrained(model_name).to(device).eval()
-    idx, feats, batch, batch_idx = [], [], [], []
+    idx, feats, batch, batch_idx, hists = [], [], [], [], []
 
     def flush():
         if not batch:
@@ -301,18 +303,28 @@ def embed_all(rows, model_name, device):
         if "unreadable" in row["rm"]:
             continue
         try:
-            batch.append(Image.fromarray(downscale(load_rgb(RAW / row["path"]), 512)))
+            img = load_rgb(RAW / row["path"])
+            batch.append(Image.fromarray(downscale(img, 512)))
             batch_idx.append(i)
+            hists.append(colour_hist(img))
         except Exception:
             continue
         if len(batch) == 32:
             flush()
     flush()
-    return np.array(idx), (np.concatenate(feats) if feats else np.zeros((0, 1)))
+    return np.array(idx), (np.concatenate(feats) if feats else np.zeros((0, 1))), np.array(hists)
+
+
+def colour_hist(img):
+    """16x16 histogram of the Lab colour channels (a, b); brightness is ignored."""
+    small = cv2.resize(img, (96, 128), interpolation=cv2.INTER_AREA)
+    ab = cv2.cvtColor(small, cv2.COLOR_RGB2LAB)[..., 1:].reshape(-1, 2)
+    h, _, _ = np.histogram2d(ab[:, 0], ab[:, 1], bins=16, range=[[0, 256], [0, 256]])
+    return (h / h.sum()).ravel()
 
 
 def find_duplicates(rows, P, device):
-    idx, E = embed_all(rows, P["dedup_model"], device)
+    idx, E, H = embed_all(rows, P["dedup_model"], device)
     parent = list(range(len(idx)))
 
     def find(a):
@@ -325,9 +337,15 @@ def find_duplicates(rows, P, device):
     for s in range(0, len(idx), chunk):
         sims = E[s:s + chunk] @ E.T
         for a, b in np.argwhere(sims >= P["dedup_similarity"]):
+            sim = sims[a, b]
             a += s
-            if b > a:
-                parent[find(b)] = find(a)
+            if b <= a:
+                continue
+            # same shoot in another colour is a different product, not a copy
+            colour_diff = 1 - np.minimum(H[a], H[b]).sum()
+            if sim < P["dedup_exact"] and colour_diff > P["dedup_colour_diff"]:
+                continue
+            parent[find(b)] = find(a)
 
     groups = {}
     for k in range(len(idx)):

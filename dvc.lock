@@ -10,8 +10,8 @@ stages:
       nfiles: 9471
     - path: scripts/01_filter/smart_filter.py
       hash: md5
-      md5: 2fba1dd4dca8d33af9c40c6d3f1b6fbc
-      size: 19794
+      md5: 72f941f45c0d7d70626d87d0e5b925fb
+      size: 20758
     params:
       params.yaml:
         filter:
@@ -30,10 +30,19 @@ stages:
           seated_remove: 0.5
           seated_borderline: 0.7
           ankle_below_frame: 1.0
+          ankle_below_frame_kurta: 1.05
+          kurta_categories:
+          - Men_Shalwar_Kameez
+          - Men_Kurta_Set
+          - Men_Sherwani
+          - Women_Kurta_Set
+          - Co-Ord-Sets
           pose_angle_threshold: 60
           angle_borderline_start: 45
           person_min_height: 0.15
           dedup_similarity: 0.95
+          dedup_exact: 0.99
+          dedup_colour_diff: 0.06
           dedup_model: facebook/dinov2-small
           upper_body_categories:
           - Men_Waistcoat
@@ -53,9 +62,9 @@ stages:
     outs:
     - path: reports/filter_flags.csv
       hash: md5
-      md5: baadd092d8247a52bfb1bdc04835f478
-      size: 2805205
+      md5: eb2e31dc249ffe82b8435385fb03d555
+      size: 2803886
     - path: reports/filter_metrics.json
       hash: md5
-      md5: 1c9da65723fea725a46d046793c2c94b
-      size: 2119
+      md5: 0d88ecf785c2b41116b0cbfcc94e06f0
+      size: 2118

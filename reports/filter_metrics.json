@@ -1,11 +1,11 @@
 {
   "total": 9456,
-  "keep": 8277,
-  "borderline": 144,
-  "remove": 1035,
+  "keep": 8349,
+  "borderline": 145,
+  "remove": 962,
   "reasons": {
-    "cropped_body": 328,
-    "duplicate": 280,
+    "cropped_body": 289,
+    "duplicate": 239,
     "no_person": 133,
     "slightly_turned": 118,
     "pose_not_found": 117,
@@ -22,9 +22,9 @@
   },
   "by_category": {
     "Anarkali": {
-      "keep": 304,
+      "keep": 305,
       "borderline": 8,
-      "remove": 39
+      "remove": 38
     },
     "Angrakha": {
       "keep": 374,
@@ -32,14 +32,14 @@
       "remove": 16
     },
     "Co-Ord-Sets": {
-      "keep": 434,
+      "keep": 437,
       "borderline": 7,
-      "remove": 58
+      "remove": 55
     },
     "Gharara": {
-      "keep": 441,
+      "keep": 447,
       "borderline": 11,
-      "remove": 48
+      "remove": 42
     },
     "Gown": {
       "keep": 395,
@@ -67,24 +67,24 @@
       "remove": 32
     },
     "Men_Kurta_Set": {
-      "keep": 406,
-      "borderline": 4,
-      "remove": 90
+      "keep": 416,
+      "borderline": 5,
+      "remove": 79
     },
     "Men_Shalwar_Kameez": {
-      "keep": 419,
+      "keep": 432,
       "borderline": 6,
-      "remove": 95
+      "remove": 82
     },
     "Men_Sherwani": {
-      "keep": 281,
+      "keep": 295,
       "borderline": 14,
-      "remove": 91
+      "remove": 77
     },
     "Men_Waistcoat": {
-      "keep": 1533,
+      "keep": 1537,
       "borderline": 29,
-      "remove": 113
+      "remove": 109
     },
     "Peplum": {
       "keep": 48,
@@ -92,24 +92,24 @@
       "remove": 3
     },
     "Pishwas": {
-      "keep": 472,
+      "keep": 477,
       "borderline": 6,
-      "remove": 22
+      "remove": 17
     },
     "Saree": {
-      "keep": 324,
+      "keep": 329,
       "borderline": 10,
-      "remove": 43
+      "remove": 38
     },
     "Sharara": {
-      "keep": 468,
+      "keep": 474,
       "borderline": 6,
-      "remove": 194
+      "remove": 188
     },
     "Women_Kurta_Set": {
-      "keep": 887,
+      "keep": 892,
       "borderline": 10,
-      "remove": 99
+      "remove": 94
     },
     "Wrap": {
       "keep": 11,
