@@ -40,9 +40,10 @@ filter:
 # Phase 3: Preprocessing
 preprocess:
   mediapipe_confidence: 0.5
-  densepose_model: "r50"       # r50 or r101
-  sam_model_type: "vit_l"      # vit_h, vit_l, vit_b
-  sam_checkpoint: "sam_vit_l_0b3195"
+  parsing_model: "mattmdjaga/segformer_b2_clothes"   # pip-installable stand-in for SCHP
+  mask_dilate_px: 25                                  # how far the repaint mask grows around garment + arms
+  sam2_config: "configs/sam2.1/sam2.1_hiera_l.yaml"   # only used with --sam2
+  sam2_checkpoint: "models/sam2.1_hiera_large.pt"
 
 # Phase 4: Training
 train:
