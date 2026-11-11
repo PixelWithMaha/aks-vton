@@ -10,11 +10,18 @@ The filter could not decide on 144 images. Each of us checks our own categories 
 
 ## 1. Setup (once)
 
+The DagsHub repo is private, so Maaham must first add you as a collaborator on
+https://dagshub.com/PixelWithMaha/aks-dataset (Settings → Collaborators). Then:
+
 ```bash
 cd aks-vton
 git pull
 source venv/bin/activate        # Windows: venv\Scripts\activate
-dvc pull -r dagshub_remote      # downloads the images into data/raw (skip if you already have them)
+# once: log in with YOUR OWN DagsHub token (DagsHub → profile → Settings → Tokens). Never share it.
+dvc remote modify --local dagshub_remote auth basic
+dvc remote modify --local dagshub_remote user <your DagsHub username>
+dvc remote modify --local dagshub_remote password <your token>
+dvc pull -r dagshub_remote      # downloads the 9,456 images (~6 GB) into data/raw
 ```
 
 ## 2. Review in FiftyOne
