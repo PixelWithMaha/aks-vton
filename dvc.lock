@@ -68,3 +68,40 @@ stages:
       hash: md5
       md5: 0d88ecf785c2b41116b0cbfcc94e06f0
       size: 2118
+  build_cleaned:
+    cmd: python scripts/01_filter/build_cleaned.py
+    deps:
+    - path: data/raw
+      hash: md5
+      md5: cc1566406faf6d5e1a748a46fc894ec5.dir
+      size: 6198445108
+      nfiles: 9471
+    - path: reports/filter_flags.csv
+      hash: md5
+      md5: eb2e31dc249ffe82b8435385fb03d555
+      size: 2803886
+    - path: reports/review_decisions.csv
+      hash: md5
+      md5: c4117dc304b9130db815a7233d4886fb
+      size: 6249
+    - path: scripts/01_filter/build_cleaned.py
+      hash: md5
+      md5: 99abca157b80370ef53dd006550c3288
+      size: 5221
+    params:
+      params.yaml:
+        clean:
+          test_fraction: 0.1
+          seed: 42
+          group_similarity: 0.95
+        filter.upper_body_categories:
+        - Men_Waistcoat
+        - Jacket
+        - Peplum
+        - Wrap
+    outs:
+    - path: data/cleaned
+      hash: md5
+      md5: b3e7e19f3cdb37d20dddece0ff736a08.dir
+      size: 5401061435
+      nfiles: 8410

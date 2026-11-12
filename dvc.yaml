@@ -12,3 +12,15 @@ stages:
     metrics:
       - reports/filter_metrics.json:
           cache: false
+  build_cleaned:
+    cmd: python scripts/01_filter/build_cleaned.py
+    deps:
+      - data/raw
+      - reports/filter_flags.csv
+      - reports/review_decisions.csv
+      - scripts/01_filter/build_cleaned.py
+    params:
+      - clean
+      - filter.upper_body_categories
+    outs:
+      - data/cleaned

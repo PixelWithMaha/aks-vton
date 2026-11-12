@@ -37,6 +37,12 @@ filter:
   auto_keep_reasons: [slightly_turned, soft]   # ~95% fine
   auto_remove_reasons: [maybe_seated]          # ~85% seated
 
+# Phase 1 end: cleaned dataset (build_cleaned.py)
+clean:
+  test_fraction: 0.1         # per category (stratified)
+  seed: 42
+  group_similarity: 0.95     # look-alike images (e.g. colour variants) stay on the same side of the split
+
 # Phase 3: Preprocessing
 preprocess:
   mediapipe_confidence: 0.5
